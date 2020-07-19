@@ -12,6 +12,9 @@ https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/payment
 ### `create user`
 https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/create-customer
 
+## `get customer id`
+https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/get-customer
+
 
 ## Available Scripts
 
