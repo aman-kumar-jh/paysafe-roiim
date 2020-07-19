@@ -12,27 +12,33 @@ const intitalState = {
 	email_error: "",
 	amount_error: "",
 	username_error: "",
+
+	loading: "",
 };
 
 class App extends React.Component {
 	state = intitalState;
 
-	checkout = () => {
+	checkout = async (token, id) => {
 		//const paysafe = window.paysafe.checkout.min;
+		console.log(token);
 		const str =
 			"public-7751:B-qa2-0-5f031cbe-0-302d021500890ef262296563accd1cb4aab790323d2fd570d30214510bcdacdaa4f03f59477eef13f2af5ad13e3044";
 		const KEY = btoa(str);
-		window.paysafe.checkout.setup(
+		this.setState({ loading: "" });
+		await window.paysafe.checkout.setup(
 			KEY,
 
 			{
 				currency: "USD",
 				amount: this.state.amount * 100,
+				singleUseCustomerToken: token,
+				customerId: id,
 				customer: {
 					firstName: this.state.name,
-					lastName: "Dee",
+					lastName: "Kumar",
 					email: this.state.email,
-					phone: "1234567890",
+					phone: "9999999999",
 					dateOfBirth: {
 						day: 1,
 						month: 7,
@@ -61,16 +67,17 @@ class App extends React.Component {
 					paysafecard: {
 						consumerId: "1232323",
 					},
-					vippreferred: {
-						consumerId: "550726575",
-						accountId: "1679688456",
-					},
+				},
+				payoutConfig: {
+					minimumAmount: 1,
 				},
 			},
 			(instance, error, result) => {
 				if (result && result.paymentHandleToken) {
 					result["merchantRefNum"] = this.state.username;
 					result["currency"] = "USD";
+					result["custId"] = id;
+					console.log(result);
 					axios
 						.post(
 							"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/payment",
@@ -111,15 +118,20 @@ class App extends React.Component {
 		);
 	};
 
-	saveUser = () => {
-		const body = { userId: this.state.username, name: this.state.name };
-		axios
-			.post(
-				"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/create-customer",
-				body
-			)
-			.then((res) => console.log(res))
-			.catch((err) => console.log(err));
+	getCustomerId = async (body) => {
+		try {
+			const res = await axios.post(
+				"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/get-customer",
+				{
+					data: body,
+				}
+			);
+			console.log(res);
+			this.checkout(res.data.token, res.data.id);
+		} catch (err) {
+			alert("User not found");
+			console.log(err);
+		}
 	};
 
 	changeUserName = (e) => {
@@ -165,70 +177,104 @@ class App extends React.Component {
 
 	makePayment = (e) => {
 		if (this.validForm()) {
-			this.checkout();
+			this.setState({ loading: "Loading" });
+			const body = {
+				merchantRefNum: this.state.username,
+				name: this.state.name,
+			};
+			axios
+				.post(
+					"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/create-customer",
+					{
+						data: body,
+					}
+				)
+				.then(async (res) => {
+					console.log(res);
+					if (res.data.message === "successful") {
+						this.getCustomerId(body);
+					} else {
+						alert("User Already registerd, Choose another username");
+						console.log("went wrong");
+					}
+				})
+				.catch((err) => {
+					console.log(err);
+					alert("Please try again something went wrong");
+				});
+
+			//this.checkout();
 		}
 	};
 
 	render() {
 		return (
 			<div className="center ui container">
-				<form className="ui form">
-					<h4 className="ui dividing header">Information</h4>
-					<div className="field">
-						<div className="two fields">
-							<div className="field">
-								<div className="error">{this.state.username_error}</div>
-								<label>Username</label>
-								<input
-									type="text"
-									name="username"
-									placeholder="Username"
-									value={this.state.username}
-									onChange={this.changeUserName}
-								/>
-							</div>
-							<div className="field">
-								<div className="error">{this.state.name_error}</div>
-								<label>Name</label>
-								<input
-									type="text"
-									name="lastName"
-									placeholder="Name"
-									onChange={this.changeName}
-									value={this.state.name}
-								/>
-							</div>
+				<div class="ui segment">
+					{this.state.loading !== "" ? (
+						<div class="ui active inverted dimmer">
+							<div class="ui text loader">{this.state.loading}</div>
 						</div>
-					</div>
-					<div className="two field">
-						<div className="field">
-							<div className="error">{this.state.currenccy_error}</div>
+					) : null}
 
-							<label>Email</label>
-							<input
-								type="text"
-								name="amount"
-								placeholder="email address"
-								value={this.state.email}
-								onChange={this.changeEmail}
-							/>
-						</div>
+					<form className="ui form">
+						<h4 className="ui dividing header">Information</h4>
 						<div className="field">
-							<div className="error">{this.state.amount_error}</div>
-							<label>Amount($)</label>
-							<input
-								type="text"
-								name="amount"
-								placeholder="AMOUNT"
-								value={this.state.amount}
-								onChange={this.changeAmount}
-							></input>
+							<div className="two fields">
+								<div className="field">
+									<div className="error">{this.state.username_error}</div>
+									<label>Username</label>
+									<input
+										type="text"
+										name="username"
+										placeholder="Username"
+										value={this.state.username}
+										onChange={this.changeUserName}
+									/>
+								</div>
+								<div className="field">
+									<div className="error">{this.state.name_error}</div>
+									<label>Name</label>
+									<input
+										type="text"
+										name="lastName"
+										placeholder="Name"
+										onChange={this.changeName}
+										value={this.state.name}
+									/>
+								</div>
+							</div>
 						</div>
-					</div>
-					<div className="ui button" onClick={this.makePayment} tabIndex="0">
-						Donate
-					</div>
-				</form>
+						<div className="two field">
+							<div className="field">
+								<div className="error">{this.state.currenccy_error}</div>
+
+								<label>Email</label>
+								<input
+									type="text"
+									name="amount"
+									placeholder="email address"
+									value={this.state.email}
+									onChange={this.changeEmail}
+								/>
+							</div>
+							<div className="field">
+								<div className="error">{this.state.amount_error}</div>
+								<label>Amount($)</label>
+								<input
+									type="text"
+									name="amount"
+									placeholder="AMOUNT"
+									value={this.state.amount}
+									onChange={this.changeAmount}
+								></input>
+							</div>
+						</div>
+						<div className="ui button" onClick={this.makePayment} tabIndex="0">
+							Donate
+						</div>
+					</form>
+				</div>
 			</div>
 		);
 	}
