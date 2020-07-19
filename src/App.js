@@ -151,6 +151,7 @@ class App extends React.Component {
 
 	changeAmount = (e) => {
 		this.setState({ amount: e.target.value });
+		console.log(this.state.amount);
 	};
 
 	validForm = () => {
@@ -158,19 +159,27 @@ class App extends React.Component {
 		if (this.state.username === "") {
 			error_happen = true;
 			this.setState({ username_error: "Enter Valid Username" });
+		} else {
+			this.setState({ username_error: "" });
 		}
 		if (this.state.name === "") {
 			error_happen = true;
 			this.setState({ name_error: "Enter Valid Name" });
+		} else {
+			this.setState({ name_error: "" });
 		}
 
 		if (this.state.email === "" || !EMAIL_REG.test(this.state.email)) {
 			error_happen = true;
 			this.setState({ email_error: "Enter Valid Email" });
+		} else {
+			this.setState({ email_error: "" });
 		}
-		if (parseInt(this.state.amount) <= 0) {
+		if (isNaN(parseInt(this.state.amount))) {
 			error_happen = true;
 			this.setState({ amount_error: "Amount Should Be Number Greater 0" });
+		} else {
+			this.setState({ amount_error: "" });
 		}
 
 		if (error_happen) return false;
@@ -202,7 +211,7 @@ class App extends React.Component {
 					this.setState(intitalState);
 				});
 		} else {
-			alert("Check The Form");
+			console.log("Check The Form");
 		}
 	};
 
