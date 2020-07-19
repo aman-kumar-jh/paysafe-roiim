@@ -197,7 +197,7 @@ class App extends React.Component {
 						console.log("went wrong");
 					}
 				})
-				.catch(( ) => {
+				.catch(() => {
 					alert("Please try again something went wrong");
 					this.setState(intitalState);
 				});
@@ -213,9 +213,7 @@ class App extends React.Component {
 					<i className="settings icon"></i>
 					<div className="content">
 						Save Card Feature
-						<div className="sub header">
-							To See, Make Payment With Same Username
-						</div>
+						<div className="sub header">Make Payment With Same Username</div>
 					</div>
 				</h2>
 
@@ -290,6 +288,10 @@ class App extends React.Component {
 							</div>
 						</form>
 					</div>
+					<span className="ui tag label">
+						Engineered <a class="ui yellow circular label">&#128519;</a> by Aman
+						Kumar
+					</span>
 				</div>
 			</div>
 		);
