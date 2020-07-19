@@ -16,7 +16,7 @@ https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/create-customer
 https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/get-customer
 
 ### DATABASE
-**Dynamodb**
+Dynamodb
 
 
 ## Available Scripts
