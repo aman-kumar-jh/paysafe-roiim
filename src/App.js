@@ -69,8 +69,6 @@ class App extends React.Component {
 			},
 			(instance, error, result) => {
 				if (result && result.paymentHandleToken) {
-					console.log(result.paymentHandleToken);
-					console.log(result, instance);
 					result["merchantRefNum"] = this.state.username;
 					result["currency"] = "USD";
 					axios
