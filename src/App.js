@@ -77,7 +77,7 @@ class App extends React.Component {
 					result["merchantRefNum"] = this.state.username;
 					result["currency"] = "USD";
 					result["custId"] = id;
-					console.log(result);
+					//console.log(result);
 					axios
 						.post(
 							"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/payment",
@@ -86,7 +86,7 @@ class App extends React.Component {
 							}
 						)
 						.then((res) => {
-							console.log(res);
+							//console.log(res);
 							if (res.data.message === "successful") {
 								instance.showSuccessScreen(res.data.paymentId);
 							} else {
@@ -126,11 +126,11 @@ class App extends React.Component {
 					data: body,
 				}
 			);
-			console.log(res);
+			//console.log(res);
 			this.checkout(res.data.token, res.data.id);
 		} catch (err) {
 			alert("User not found");
-			console.log(err);
+			//console.log(err);
 		}
 	};
 
@@ -190,7 +190,7 @@ class App extends React.Component {
 					}
 				)
 				.then(async (res) => {
-					console.log(res);
+					//console.log(res);
 					if (res.data.message === "successful") {
 						this.getCustomerId(body);
 					} else {
@@ -199,7 +199,7 @@ class App extends React.Component {
 					}
 				})
 				.catch((err) => {
-					console.log(err);
+					//console.log(err);
 					alert("Please try again something went wrong");
 				});
 
