@@ -16,15 +16,25 @@ const intitalState = {
 	loading: "",
 };
 
+const str =
+	"public-7751:B-qa2-0-5f031cbe-0-302d021500890ef262296563accd1cb4aab790323d2fd570d30214510bcdacdaa4f03f59477eef13f2af5ad13e3044";
+const KEY = btoa(str);
+
+const EMAIL_REG = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+
+const API_URL = {
+	create_customer:
+		"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/create-customer",
+	payment:
+		"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/payment",
+	customer_id:
+		"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/get-customer",
+};
+
 class App extends React.Component {
 	state = intitalState;
 
 	checkout = async (token, id) => {
-		//const paysafe = window.paysafe.checkout.min;
-		//console.log(token);
-		const str =
-			"public-7751:B-qa2-0-5f031cbe-0-302d021500890ef262296563accd1cb4aab790323d2fd570d30214510bcdacdaa4f03f59477eef13f2af5ad13e3044";
-		const KEY = btoa(str);
 		this.setState({ loading: "" });
 		await window.paysafe.checkout.setup(
 			KEY,
@@ -77,14 +87,11 @@ class App extends React.Component {
 					result["merchantRefNum"] = this.state.username;
 					result["currency"] = "USD";
 					result["custId"] = id;
-					//console.log(result);
+
 					axios
-						.post(
-							"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/payment",
-							{
-								data: result,
-							}
-						)
+						.post(API_URL.payment, {
+							data: result,
+						})
 						.then((res) => {
 							//console.log(res);
 							if (res.data.message === "successful") {
@@ -99,9 +106,9 @@ class App extends React.Component {
 							if (instance.isOpen()) instance.close();
 						});
 				} else {
-					alert("something went wrong,Please try again");
+					// error handle
+					alert("Server Down,Please try again");
 					this.setState(intitalState);
-					// Handle the error
 				}
 			},
 			(stage, expired) => {
@@ -120,17 +127,13 @@ class App extends React.Component {
 
 	getCustomerId = async (body) => {
 		try {
-			const res = await axios.post(
-				"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/get-customer",
-				{
-					data: body,
-				}
-			);
-			//console.log(res);
+			const res = await axios.post(API_URL.customer_id, {
+				data: body,
+			});
 			this.checkout(res.data.token, res.data.id);
 		} catch (err) {
 			alert("User not found");
-			//console.log(err);
+			this.setState(intitalState);
 		}
 	};
 
@@ -152,7 +155,6 @@ class App extends React.Component {
 
 	validForm = () => {
 		let error_happen = false;
-		const REG = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
 		if (this.state.username === "") {
 			error_happen = true;
 			this.setState({ username_error: "Enter Valid Username" });
@@ -162,20 +164,20 @@ class App extends React.Component {
 			this.setState({ name_error: "Enter Valid Name" });
 		}
 
-		if (this.state.email === "" || !REG.test(this.state.email)) {
+		if (this.state.email === "" || !EMAIL_REG.test(this.state.email)) {
 			error_happen = true;
-			this.setState({ currenccy_error: "Enter Valid Email" });
+			this.setState({ email_error: "Enter Valid Email" });
 		}
-		if (this.state.amount <= 0) {
+		if (parseInt(this.state.amount) <= 0) {
 			error_happen = true;
-			this.setState({ amount_error: "Amount should be greater than 0" });
+			this.setState({ amount_error: "Amount Should Be Number Greater 0" });
 		}
 
 		if (error_happen) return false;
 		return true;
 	};
 
-	makePayment = (e) => {
+	makePayment = () => {
 		if (this.validForm()) {
 			this.setState({ loading: "Loading" });
 			const body = {
@@ -183,97 +185,111 @@ class App extends React.Component {
 				name: this.state.name,
 			};
 			axios
-				.post(
-					"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/create-customer",
-					{
-						data: body,
-					}
-				)
+				.post(API_URL.create_customer, {
+					data: body,
+				})
 				.then(async (res) => {
-					//console.log(res);
 					if (res.data.message === "successful") {
 						this.getCustomerId(body);
 					} else {
 						alert("User Already registerd, Choose another username");
+						this.setState(intitalState);
 						console.log("went wrong");
 					}
 				})
-				.catch((err) => {
-					//console.log(err);
+				.catch(( ) => {
 					alert("Please try again something went wrong");
+					this.setState(intitalState);
 				});
-
-			//this.checkout();
+		} else {
+			alert("Check The Form");
 		}
 	};
 
 	render() {
 		return (
-			<div className="center ui container">
-				<div class="ui segment">
-					{this.state.loading !== "" ? (
-						<div class="ui active inverted dimmer">
-							<div class="ui text loader">{this.state.loading}</div>
+			<div className="center">
+				<h2 className="ui red header">
+					<i className="settings icon"></i>
+					<div className="content">
+						Save Card Feature
+						<div className="sub header">
+							To See, Make Payment With Same Username
 						</div>
-					) : null}
+					</div>
+				</h2>
 
-					<form className="ui form">
-						<h4 className="ui dividing header">Information</h4>
-						<div className="field">
-							<div className="two fields">
+				<div className="center-less ui container">
+					<div className="ui segment">
+						{this.state.loading !== "" ? (
+							<div className="ui active inverted dimmer">
+								<div className="ui text loader">{this.state.loading}</div>
+							</div>
+						) : null}
+
+						<form className="ui form">
+							<h4 className="ui dividing header">Information</h4>
+							<div className="field">
+								<div className="two fields">
+									<div className="field">
+										<div className="error">{this.state.username_error}</div>
+										<label>Username</label>
+										<input
+											type="text"
+											name="username"
+											placeholder="Unique Username"
+											value={this.state.username}
+											onChange={this.changeUserName}
+										/>
+									</div>
+									<div className="field">
+										<div className="error">{this.state.name_error}</div>
+										<label>Name</label>
+										<input
+											type="text"
+											name="lastName"
+											placeholder="Name"
+											onChange={this.changeName}
+											value={this.state.name}
+										/>
+									</div>
+								</div>
+							</div>
+							<div className="two field">
 								<div className="field">
-									<div className="error">{this.state.username_error}</div>
-									<label>Username</label>
+									<div className="error">{this.state.email_error}</div>
+
+									<label>Email</label>
 									<input
 										type="text"
-										name="username"
-										placeholder="Username"
-										value={this.state.username}
-										onChange={this.changeUserName}
+										name="amount"
+										placeholder="email address"
+										value={this.state.email}
+										onChange={this.changeEmail}
 									/>
 								</div>
 								<div className="field">
-									<div className="error">{this.state.name_error}</div>
-									<label>Name</label>
+									<div className="error">{this.state.amount_error}</div>
+									<label>Amount($)</label>
 									<input
-										type="text"
-										name="lastName"
-										placeholder="Name"
-										onChange={this.changeName}
-										value={this.state.name}
-									/>
+										type="number"
+										name="amount"
+										placeholder="AMOUNT"
+										min="1"
+										value={this.state.amount}
+										onChange={this.changeAmount}
+									></input>
 								</div>
 							</div>
-						</div>
-						<div className="two field">
-							<div className="field">
-								<div className="error">{this.state.currenccy_error}</div>
-
-								<label>Email</label>
-								<input
-									type="text"
-									name="amount"
-									placeholder="email address"
-									value={this.state.email}
-									onChange={this.changeEmail}
-								/>
+							<div
+								className="ui button"
+								onClick={this.makePayment}
+								tabIndex="0"
+							>
+								Donate
 							</div>
-							<div className="field">
-								<div className="error">{this.state.amount_error}</div>
-								<label>Amount($)</label>
-								<input
-									type="text"
-									name="amount"
-									placeholder="AMOUNT"
-									value={this.state.amount}
-									onChange={this.changeAmount}
-								></input>
-							</div>
-						</div>
-						<div className="ui button" onClick={this.makePayment} tabIndex="0">
-							Donate
-						</div>
-					</form>
+						</form>
+					</div>
 				</div>
 			</div>
 		);
