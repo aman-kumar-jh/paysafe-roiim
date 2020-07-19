@@ -1,4 +1,3 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ### DEMO
 http://ec2-13-233-197-110.ap-south-1.compute.amazonaws.com:3000/
