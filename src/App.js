@@ -27,8 +27,7 @@ class App extends React.Component {
 
 			{
 				currency: "USD",
-				amount: this.state.amount*100,
-
+				amount: this.state.amount * 100,
 				customer: {
 					firstName: this.state.name,
 					lastName: "Dee",
@@ -88,19 +87,15 @@ class App extends React.Component {
 							} else {
 								instance.showFailureScreen();
 							}
-
-							//setTimeout(() => {console.log("wait")},2000);
-							//if(instance.isOpen()) instance.close();
 						})
 						.catch((err) => {
 							console.log(err);
 							instance.showFailureScreen();
 							if (instance.isOpen()) instance.close();
 						});
-					// make AJAX call to Payments API
 				} else {
 					alert("something went wrong,Please try again");
-					
+					this.setState(intitalState);
 					// Handle the error
 				}
 			},
@@ -119,11 +114,15 @@ class App extends React.Component {
 	};
 
 	saveUser = () => {
-		const body = {userId: this.state.username,name: this.state.name};
-		axios.post("https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/create-customer",body)
-		.then(res => console.log(res))
-		.catch((err) => console.log(err)); 
-	}
+		const body = { userId: this.state.username, name: this.state.name };
+		axios
+			.post(
+				"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/create-customer",
+				body
+			)
+			.then((res) => console.log(res))
+			.catch((err) => console.log(err));
+	};
 
 	changeUserName = (e) => {
 		this.setState({ username: e.target.value });
@@ -150,12 +149,12 @@ class App extends React.Component {
 		}
 		if (this.state.name === "") {
 			error_happen = true;
-			this.setState({ name_error: "enter valid name" });
+			this.setState({ name_error: "Enter Valid Name" });
 		}
-		
-		if (this.state.email === "" || !(REG.test(this.state.email))) {
+
+		if (this.state.email === "" || !REG.test(this.state.email)) {
 			error_happen = true;
-			this.setState({ currenccy_error: "choose the currency" });
+			this.setState({ currenccy_error: "Enter Valid Email" });
 		}
 		if (this.state.amount <= 0) {
 			error_happen = true;
@@ -168,10 +167,7 @@ class App extends React.Component {
 
 	makePayment = (e) => {
 		if (this.validForm()) {
-			console.log(this.state);
 			this.checkout();
-			//this.setState(intitalState);
-			
 		}
 	};
 
@@ -211,11 +207,13 @@ class App extends React.Component {
 							<div className="error">{this.state.currenccy_error}</div>
 
 							<label>Email</label>
-							<input type="text"
+							<input
+								type="text"
 								name="amount"
 								placeholder="email address"
 								value={this.state.email}
-								onChange={this.changeEmail}/>
+								onChange={this.changeEmail}
+							/>
 						</div>
 						<div className="field">
 							<div className="error">{this.state.amount_error}</div>
