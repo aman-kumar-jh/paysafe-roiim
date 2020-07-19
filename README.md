@@ -1,4 +1,3 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ### DEMO
 http://ec2-13-233-197-110.ap-south-1.compute.amazonaws.com:3000/
@@ -11,6 +10,12 @@ https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/payment
 
 ### `create user`
 https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/create-customer
+
+## `get customer id`
+https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/get-customer
+
+### DATABASE
+Dynamodb
 
 
 ## Available Scripts
