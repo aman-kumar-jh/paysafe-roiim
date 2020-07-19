@@ -1,8 +1,24 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+### DEMO
+http://ec2-13-233-197-110.ap-south-1.compute.amazonaws.com:3000/
+
+### BACKEND
+Hosted on AWS lambda using api-gateway
+
+### `make payment`
+https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/payment
+
+### `create user`
+https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/create-customer
+
+
 ## Available Scripts
 
 In the project directory, you can run:
+
+### `npm install`
+
 
 ### `npm start`
 
