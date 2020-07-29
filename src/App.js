@@ -1,6 +1,7 @@
 import React from "react";
 import "./App.css";
-import axios from "axios";
+import awsApi from "./apis/awsBackendApi";
+import config from "./config";
 
 const intitalState = {
 	name: "",
@@ -16,28 +17,18 @@ const intitalState = {
 	loading: "",
 };
 
-const str =
-	"public-7751:B-qa2-0-5f031cbe-0-302d021500890ef262296563accd1cb4aab790323d2fd570d30214510bcdacdaa4f03f59477eef13f2af5ad13e3044";
-const KEY = btoa(str);
-
 const EMAIL_REG = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
 
-const API_URL = {
-	create_customer:
-		"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/create-customer",
-	payment:
-		"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/payment",
-	customer_id:
-		"https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/get-customer",
-};
-
 class App extends React.Component {
-	state = intitalState;
+	constructor(props) {
+		super(props);
+		this.state = intitalState;
+		this.btnRef = React.createRef();
+	}
 
 	checkout = async (token, id) => {
-		this.setState({ loading: "" });
 		await window.paysafe.checkout.setup(
-			KEY,
+			config.key,
 
 			{
 				currency: "USD",
@@ -83,13 +74,14 @@ class App extends React.Component {
 				},
 			},
 			(instance, error, result) => {
+				this.setState({ loading: "" });
 				if (result && result.paymentHandleToken) {
 					result["merchantRefNum"] = this.state.username;
 					result["currency"] = "USD";
 					result["custId"] = id;
-
-					axios
-						.post(API_URL.payment, {
+					this.setState(intitalState);
+					awsApi
+						.post("/payment", {
 							data: result,
 						})
 						.then((res) => {
@@ -107,27 +99,28 @@ class App extends React.Component {
 						});
 				} else {
 					// error handle
-					alert("Server Down,Please try again");
-					this.setState(intitalState);
+					alert("Server Down, Please try again");
+					window.location.reload();
 				}
 			},
 			(stage, expired) => {
-				//console.log(stage);
 				switch (stage) {
-					case "PAYMENT_HANDLE_NOT_CREATED": // Handle the scenario
-					case "PAYMENT_HANDLE_CREATED": // Handle the scenario
-					case "PAYMENT_HANDLE_REDIRECT": // Handle the scenario
-					case "PAYMENT_HANDLE_PAYABLE": // Handle the scenario
-					default: // Handle the scenario
+					case "PAYMENT_HANDLE_NOT_CREATED":
+						this.btnRef.current.removeAttribute("disabled", "disabled");
+						break;
+					/*case "PAYMENT_HANDLE_CREATED":
+					case "PAYMENT_HANDLE_REDIRECT":
+					case "PAYMENT_HANDLE_PAYABLE":*/
+					default:
+						window.location.reload();
 				}
-				this.setState(intitalState);
 			}
 		);
 	};
 
 	getCustomerId = async (body) => {
 		try {
-			const res = await axios.post(API_URL.customer_id, {
+			const res = await awsApi.post("/get-customer", {
 				data: body,
 			});
 			this.checkout(res.data.token, res.data.id);
@@ -175,7 +168,10 @@ class App extends React.Component {
 		} else {
 			this.setState({ email_error: "" });
 		}
-		if (isNaN(parseInt(this.state.amount))) {
+		if (
+			isNaN(parseInt(this.state.amount)) ||
+			parseInt(this.state.amount) <= 0
+		) {
 			error_happen = true;
 			this.setState({ amount_error: "Amount Should Be Number Greater 0" });
 		} else {
@@ -186,15 +182,17 @@ class App extends React.Component {
 		return true;
 	};
 
-	makePayment = () => {
+	makePayment = (e) => {
+		e.preventDefault();
 		if (this.validForm()) {
-			this.setState({ loading: "Loading" });
+			this.btnRef.current.setAttribute("disabled", "disabled");
+			this.setState({ loading: "Loading..." });
 			const body = {
 				merchantRefNum: this.state.username,
 				name: this.state.name,
 			};
-			axios
-				.post(API_URL.create_customer, {
+			awsApi
+				.post("/create-customer", {
 					data: body,
 				})
 				.then(async (res) => {
@@ -202,7 +200,7 @@ class App extends React.Component {
 						this.getCustomerId(body);
 					} else {
 						alert("User Already registerd, Choose another username");
-						this.setState(intitalState);
+						window.location.reload();
 						console.log("went wrong");
 					}
 				})
@@ -211,6 +209,7 @@ class App extends React.Component {
 					this.setState(intitalState);
 				});
 		} else {
+			this.btnRef.current.removeAttribute("disabled", "disabled");
 			console.log("Check The Form");
 		}
 	};
@@ -244,7 +243,7 @@ class App extends React.Component {
 										<input
 											type="text"
 											name="username"
-											placeholder="Unique Username"
+											placeholder="UNIQUE USERNAME"
 											value={this.state.username}
 											onChange={this.changeUserName}
 										/>
@@ -255,7 +254,7 @@ class App extends React.Component {
 										<input
 											type="text"
 											name="lastName"
-											placeholder="Name"
+											placeholder="NAME"
 											onChange={this.changeName}
 											value={this.state.name}
 										/>
@@ -270,7 +269,7 @@ class App extends React.Component {
 									<input
 										type="text"
 										name="amount"
-										placeholder="email address"
+										placeholder="EMAIL ADDRESS"
 										value={this.state.email}
 										onChange={this.changeEmail}
 									/>
@@ -288,18 +287,19 @@ class App extends React.Component {
 									></input>
 								</div>
 							</div>
-							<div
+							<button
+								ref={this.btnRef}
 								className="ui button"
 								onClick={this.makePayment}
 								tabIndex="0"
 							>
 								Donate
-							</div>
+							</button>
 						</form>
 					</div>
 					<span className="ui tag label">
-						Engineered <a class="ui yellow circular label">&#128519;</a> by Aman
-						Kumar
+						Engineered <a className="ui yellow circular label">&#128519;</a> by
+						Aman Kumar
 					</span>
 				</div>
 			</div>
