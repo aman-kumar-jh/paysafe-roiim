@@ -106,6 +106,7 @@ class App extends React.Component {
 			(stage, expired) => {
 				switch (stage) {
 					case "PAYMENT_HANDLE_NOT_CREATED":
+						this.setState({loading: ""});
 						this.btnRef.current.removeAttribute("disabled", "disabled");
 						break;
 					/*case "PAYMENT_HANDLE_CREATED":
