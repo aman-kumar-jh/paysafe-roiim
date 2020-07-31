@@ -1,8 +1,8 @@
 
-### DEMO
+## DEMO
 http://ec2-13-233-197-110.ap-south-1.compute.amazonaws.com:3000/
 
-### BACKEND
+## BACKEND
 Hosted on AWS lambda using api-gateway
 
 ### `make payment`
@@ -11,10 +11,10 @@ https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/payment
 ### `create user`
 https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/create-customer
 
-## `get customer id`
+### `get customer id & token`
 https://n5np1597r7.execute-api.ap-south-1.amazonaws.com/dev/get-customer
 
-### DATABASE
+## DATABASE
 Dynamodb
 
 
