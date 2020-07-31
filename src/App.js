@@ -47,9 +47,7 @@ class App extends React.Component {
 					},
 				},
 				billingAddress: {
-					nickName: this.state.name,
 					street: "India",
-					street2: "India",
 					city: "India",
 					zip: "95014",
 					country: "IN",
@@ -59,18 +57,11 @@ class App extends React.Component {
 				environment: "TEST",
 				merchantRefNum: this.state.username,
 				canEditAmount: false,
-				merchantDescriptor: {
-					dynamicDescriptor: "XYZ",
-					phone: "1234567890",
-				},
 				displayPaymentMethods: ["card"],
 				paymentMethodDetails: {
 					paysafecard: {
-						consumerId: "1232323",
+						consumerId: id,
 					},
-				},
-				payoutConfig: {
-					minimumAmount: 1,
 				},
 			},
 			(instance, error, result) => {
@@ -89,17 +80,16 @@ class App extends React.Component {
 							if (res.data.message === "successful") {
 								instance.showSuccessScreen(res.data.paymentId);
 							} else {
-								instance.showFailureScreen();
+								instance.showFailureScreen("Invalid Card Details");
 							}
 						})
-						.catch((err) => {
-							console.log(err);
-							instance.showFailureScreen();
-							if (instance.isOpen()) instance.close();
+						.catch((error) => {
+							console.log(error.message);
+							instance.showFailureScreen(error.correlationId);
 						});
 				} else {
 					// error handle
-					alert("Server Down, Please try again");
+					alert("Server Overload, Please try again");
 					window.location.reload();
 				}
 			},
@@ -298,10 +288,6 @@ class App extends React.Component {
 							</button>
 						</form>
 					</div>
-					<span className="ui tag label">
-						Engineered <a className="ui yellow circular label">&#128519;</a> by
-						Aman Kumar
-					</span>
 				</div>
 			</div>
 		);
